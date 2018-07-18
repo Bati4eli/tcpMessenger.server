@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="tcpMessenger.source">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/../tcpMessenger.source/out/artifacts/tcpMessenger.source.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$PROJECT_DIR$/../tcpMessenger.source/out/artifacts/tcpMessenger.source.jar!/" />
+    </SOURCES>
+  </library>
+</component>

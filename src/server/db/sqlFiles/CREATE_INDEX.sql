@@ -1,0 +1,39 @@
+CREATE UNIQUE INDEX [IDX_USERS_L] ON [USERS](
+[PHONE]  ASC
+)
+;;
+CREATE UNIQUE INDEX [IDX_USERS_LP] ON [USERS](
+[PHONE]  ASC,
+[NICKNAME]  ASC
+)
+;;
+------------------------------------------------------------
+CREATE UNIQUE INDEX [IDX_DEV_L2] ON [DEVICES](
+[USER_ID]  ASC,
+[DEVICE_ID]  ASC
+)
+;;
+CREATE UNIQUE INDEX [IDX_DEV_L3] ON [DEVICES](
+[USER_ID]     ASC,
+[DEVICE_ID] ASC,
+[SMS_CODE]  ASC
+)
+;;
+CREATE UNIQUE INDEX [IDX_DEV_L4] ON [DEVICES](
+[USER_ID]     ASC,
+[DEVICE_ID] ASC,
+[SMS_CODE]  ASC,
+[ACTIVE]
+)
+;;
+------------------------------------------------------------
+CREATE UNIQUE INDEX [IDX_BOOK_L1] ON [BOOK](
+[USER_ID]  ASC,
+[FRIEND_PHONE]  ASC
+)
+;;
+CREATE UNIQUE INDEX [IDX_BOOK_L2] ON [BOOK](
+[USER_ID]  ASC,
+[FRIEND_ID]  ASC
+)
+;;
