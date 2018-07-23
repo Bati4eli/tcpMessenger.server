@@ -56,7 +56,7 @@ public class ServerHandler extends Thread implements CommHandler {
     @Override
     public final void run(){
         try {
-            SqlServer.get().connectDB();
+            SqlServer.get().connectDB(this);
             counterRegistered=SqlServer.get().countRegistered();
             serverListener.start();
             serverListener.join();
@@ -118,6 +118,9 @@ public class ServerHandler extends Thread implements CommHandler {
             sst.sendException(comm,ER_ARGS_COUNT);
         }
     }
+    public void notifyAboutNewRegistered(Integer userid,ArrayList<Integer> friendsList){
+
+    }
     private void authorization(ServerSocketThread sst, String[] args) {
         EnumComm comm = SIGN_IN;
         DeviceInfo deviceInfo =SqlServer.get().getDeviceInfo(args[1],args[2]);
@@ -163,7 +166,7 @@ public class ServerHandler extends Thread implements CommHandler {
         sst.userid  = ui.userid ;
         sst.uuid    = args[2];
         sst.sendComm(SIGN_IN , "true",sst.phone, ui.nick, ui.fullname );
-        SendCommOnline(sst.userid);                    //уведомляем его список контактов, что в онлайне
+        sendCommOnline(sst.userid);                    //уведомляем его список контактов, что в онлайне
         ++counterLoggeds;
     }
     private String getSmsCode(){
@@ -191,7 +194,7 @@ public class ServerHandler extends Thread implements CommHandler {
      * Т.е. на этом этапе везде где стоит userid != null , этот девайс онлайн.
      * @param userid
      */
-    private void SendCommOnline(Integer userid ){
+    private void sendCommOnline(Integer userid ){
         int onlineDevices= amountOnlineDevices(userid);
         boolean state = onlineDevices>0;
         boolean isLeft = onlineDevices==0;
@@ -246,7 +249,7 @@ public class ServerHandler extends Thread implements CommHandler {
             int userid = sst.userid;
             SqlServer.get().sign_out(sst.userid,sst.uuid);  // помечаем в БД как деактивированную эту связку
             sst.reset();
-            SendCommOnline(userid);           //уведомляем его список контактов, что в офлайне
+            sendCommOnline(userid);           //уведомляем его список контактов, что в офлайне
         }
     }
     @Override
@@ -327,7 +330,7 @@ public class ServerHandler extends Thread implements CommHandler {
                 --counterLoggeds;
                 int userid = sst.userid;
                 sst.reset();
-                SendCommOnline(userid);           //уведомляем его список контактов, что в офлайне
+                sendCommOnline(userid);           //уведомляем его список контактов, что в офлайне
             }
             action.EventSocket_Closed(sl,st);   //передаем эвент выше
             arrayThreads.remove(st);            //высвобождаем из листа

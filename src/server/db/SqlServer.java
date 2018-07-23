@@ -2,6 +2,7 @@ package server.db;
 
 import com.sun.istack.internal.Nullable;
 import org.json.JSONObject;
+import server.tcp.ServerHandler;
 import source.Const;
 
 import java.io.DataInputStream;
@@ -28,8 +29,7 @@ public class SqlServer {
 
 
     private Connection conn;
-
-
+    private ServerHandler serverHandler; //храним ссылку на экземпляр обработчика. Потребуется для уведомления пользователей о новом юзере
 
     public enum SQL_FILES{
         SQL_CREATETABLE ("CREATE_TABLES.sql"),
@@ -125,12 +125,14 @@ public class SqlServer {
 
         }
     }
-    public void connectDB() throws Exception    {// --------ПОДКЛЮЧЕНИЕ К БАЗЕ ДАННЫХ--------
+    public void connectDB(ServerHandler serverHandler) throws Exception    {
+        // --------ПОДКЛЮЧЕНИЕ К БАЗЕ ДАННЫХ--------
         conn = null;
         Class.forName("org.sqlite.JDBC");
         conn = DriverManager.getConnection("jdbc:sqlite:" + getAbsolutePath() +"/SERVERDB.s3db");
 
         Print(ANSI_GREEN,"База Подключена! " );
+        this.serverHandler = serverHandler;
 
         if (notTableExists("users") || notTableExists("DEVICES")){
             createDB(); //Создаем необходимые сущности
@@ -466,8 +468,9 @@ public class SqlServer {
             String sql = SQL_SIGN_UP.setParametr(PHONE.name(), phone);
             try (Statement statmt = conn.createStatement()) {
                 statmt.execute(sql);
-                // TODO: 08.06.2018 тут же можно уведомить всех клиентов то что этот номер из их списка зарегестрировался
-                // НО ЭТИМ КАК-ТО должен заниматься ServerHandler
+                //----//
+                UserInfo ui = getUserInfo(phone);
+                serverHandler.notifyAboutNewRegistered(ui.userid, getFriendList(ui.userid) ); // тут же можно уведомить всех клиентов то что этот номер из их списка зарегестрировался
                 return phoneExists(phone);  //можно конечно сказать Ок, но лучше проверимка..
             } catch (Exception e) {
                 return false;
