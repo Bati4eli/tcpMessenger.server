@@ -162,9 +162,8 @@ public class ServerHandler extends Thread implements CommHandler {
         sst.phone   = args[1];
         sst.userid  = ui.userid ;
         sst.uuid    = args[2];
-
         sst.sendComm(SIGN_IN , "true",sst.phone, ui.nick, ui.fullname );
-        SendCommOnline(sst,true);                    //уведомляем его список контактов, что в онлайне
+        SendCommOnline(sst.userid);                    //уведомляем его список контактов, что в онлайне
         ++counterLoggeds;
     }
     private String getSmsCode(){
@@ -185,18 +184,29 @@ public class ServerHandler extends Thread implements CommHandler {
             }
         }
         return i;
-    } 
-    private void SendCommOnline(ServerSocketThread sst,boolean online){
-        // TODO: 08.05.2018 рассылаем статус онлайн друзьям этого контакта
- //       String login = sst.userid; // запрашиваем в таблицу BOOK по полю FRIEND_PHONE , а не по своим контактам
+    }
 
-//        for(ServerSocketThread el:arrayThreads){
-//            if(!el.getSocket().isClosed() && el.logged ){   // Только залогинившимся
-//                if(! el.userid.equals(login) ) {            // Тому кто залогинился или вышел эта инфа не нужна
-//                    el.sendComm(ONLINE, login, online ? "true" : "false");    // COMMAND     LOGIN      MSG
-//                }
-//            }
-//        }
+    /**
+     * Команда должна вызываться исключительно после того как ServerSocketThread был помечен онлайн или офлайн.
+     * Т.е. на этом этапе везде где стоит userid != null , этот девайс онлайн.
+     * @param userid
+     */
+    private void SendCommOnline(Integer userid ){
+        int onlineDevices= amountOnlineDevices(userid);
+        boolean state = onlineDevices>0;
+        boolean isLeft = onlineDevices==0;
+        boolean isEntered = onlineDevices==1;
+        if(isLeft||isEntered) {
+            ArrayList<Integer> friendList = SqlServer.get().getFriendList(userid);
+            for (ServerSocketThread sst : arrayThreads) {
+                for (Integer el : friendList) {
+                    if (el.equals(sst.userid)) {
+                        sst.sendComm(ONLINE, userid.toString(), state ? "true" : "false");
+                        break;
+                    }
+                }
+            }
+        }
     }
     @Override
     public void bind(SocketThread st, String[] args) {
@@ -233,9 +243,10 @@ public class ServerHandler extends Thread implements CommHandler {
         ServerSocketThread sst = (ServerSocketThread) st;
         if (sst.logged) {
             --counterLoggeds;
+            int userid = sst.userid;
             SqlServer.get().sign_out(sst.userid,sst.uuid);  // помечаем в БД как деактивированную эту связку
             sst.reset();
-            SendCommOnline(sst,false);           //уведомляем его список контактов, что в офлайне
+            SendCommOnline(userid);           //уведомляем его список контактов, что в офлайне
         }
     }
     @Override
@@ -314,8 +325,9 @@ public class ServerHandler extends Thread implements CommHandler {
             --counterActive; ++counterClosed;
             if(sst.logged) {
                 --counterLoggeds;
+                int userid = sst.userid;
                 sst.reset();
-                SendCommOnline(sst,false);           //уведомляем его список контактов, что в офлайне
+                SendCommOnline(userid);           //уведомляем его список контактов, что в офлайне
             }
             action.EventSocket_Closed(sl,st);   //передаем эвент выше
             arrayThreads.remove(st);            //высвобождаем из листа

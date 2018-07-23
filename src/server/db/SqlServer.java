@@ -6,6 +6,7 @@ import source.Const;
 
 import java.io.DataInputStream;
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -27,6 +28,9 @@ public class SqlServer {
 
 
     private Connection conn;
+
+
+
     public enum SQL_FILES{
         SQL_CREATETABLE ("CREATE_TABLES.sql"),
         SQL_CREATEINDEX ("CREATE_INDEX.sql"),
@@ -42,6 +46,7 @@ public class SqlServer {
         SQL_BOOK_SELECT("book_select_.sql"),
         SQL_BOOK_INSERT("book_insert.sql"),
         SQL_BOOK_UPDATE("book_update.sql"),
+        SQL_BOOK_USERS_LIST_ONLINE("book_users_list_online.sql"),
         SQL_BOOK_ITEMS("book_items.sql")
         ;
         private String sqlName ; //getAbsolutePath() + "src/server/db/sqlFiles/";
@@ -238,7 +243,7 @@ public class SqlServer {
                     Statement statmt =conn.createStatement()
             ) {
                 statmt.execute(sql);   // вносим в таблицу девайс, номер, имя девайса, смс код // теперь хэндлер может отправить смс клиенту
-                return true;           // TODO: 27.06.2018 почему возвращается TRUE без проверки?
+                return true;
             } catch (Exception e){
                 System.out.println("Error SqlServer BIND: " + e);
                 return false;
@@ -338,7 +343,7 @@ public class SqlServer {
         }
     }
     private StringBuilder cleanStrBld(StringBuilder sqlItems, String lastStr){
-        if(sqlItems.substring(sqlItems.length() - lastStr.length()).equals(lastStr)){ // убираем union
+        if(sqlItems.substring(sqlItems.length() - lastStr.length() ).equals(lastStr)){ // убираем union
             sqlItems.setLength(sqlItems.length() - lastStr.length());
         }
         return sqlItems;
@@ -370,6 +375,21 @@ public class SqlServer {
             System.out.println("Error on SQLSERVER on book_insert_new: "+e);
         }finally {
             sqlItems.setLength(0);
+        }
+    }
+    public ArrayList<Integer> getFriendList(Integer userid) {
+        //возвращает список тех у кого этот ID в списке, а не список ID его друзей!
+        String sql = SQL_BOOK_USERS_LIST_ONLINE.setParametr(USER_ID.name(),userid.toString());
+        try(
+                ResultSet resSet= conn.createStatement().executeQuery(sql);
+        ){
+            ArrayList<Integer> list = new ArrayList<>();
+            while(resSet.next()){
+                list.add(resSet.getInt(0));
+            }
+            return list;
+        } catch (Exception e){
+            return null;
         }
     }
 
