@@ -12,7 +12,7 @@ import static source.Const.PrintColor;
 public class ServerListener  extends Thread {
     private volatile boolean state=false;
     private ServerSocket serverSocket;
-    private EventsListener action;
+    private EventsListener action;          // интерфейс эвентов данного класса
     private int port=0;
     public ServerListener(int port,EventsListener action) {
         this.port = port;

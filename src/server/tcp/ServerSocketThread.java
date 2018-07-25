@@ -46,31 +46,27 @@ class ServerSocketThread extends SocketThread {  // Расширяет функ�
             }*/
         }
     }
+
+    private void setErrorsAttempts(Const.EnumExceptions exc) {
+        switch (exc) {
+            case ER_UNKNOWN:                                    break;
+            case ER_WRONG_PHONE:                                break;
+            case ER_SIGNIN_WRONG_SMSCODE:                       break;
+            case ER_SIGNIN_WRONG_PASS:  setAttemptError();      break;
+            case ER_SIGNIN_NOT_ACTIVATED:                       break;
+            case ER_BIND_TIMEOUT:                               break;
+            case ER_BIND_UNKNOWN:                               break;
+            case ER_ARGS_COUNT:  setAttemptError();             break;
+        }
+    }
     @Override
     public final void sendException(Const.EnumComm comm, Const.EnumExceptions exc) {
-        switch (exc) {
-            case ER_UNKNOWN:             break;
-            case ER_WRONG_PHONE:                break;
-            case ER_SIGNIN_WRONG_SMSCODE:       break;
-            case ER_SIGNIN_WRONG_PASS:  setAttemptError();        break;
-            case ER_SIGNIN_NOT_ACTIVATED:       break;
-            case ER_BIND_TIMEOUT:                break;
-            case ER_BIND_UNKNOWN:                break;
-            case ER_ARGS_COUNT:  setAttemptError();            break;
-        }
-        this.sendComm(Const.EnumComm.ERROR, comm.toString(), exc.toString());
+        setErrorsAttempts(exc);
+        super.sendException(comm,exc);
+        ///this.sendComm(Const.EnumComm.ERROR, comm.toString(), exc.toString());
     }
     public final void sendException(Const.EnumComm comm, Const.EnumExceptions exc, String description) {
-        switch (exc) {
-            case ER_UNKNOWN:             break;
-            case ER_WRONG_PHONE:                break;
-            case ER_SIGNIN_WRONG_SMSCODE:       break;
-            case ER_SIGNIN_WRONG_PASS:  setAttemptError();        break;
-            case ER_SIGNIN_NOT_ACTIVATED:       break;
-            case ER_BIND_TIMEOUT:                break;
-            case ER_BIND_UNKNOWN:                break;
-            case ER_ARGS_COUNT:  setAttemptError();            break;
-        }
+        setErrorsAttempts(exc);
         this.sendComm(Const.EnumComm.ERROR, comm.toString(), exc.toString(), description);
     }
 }

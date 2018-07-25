@@ -27,11 +27,11 @@ import static source.Const.EnumExceptions.*;
  */
 public class ServerHandler extends Thread implements CommHandler {
 
-    private int counterActive =0, counterClosed =0,counterLoggeds=0;
-    private long counterRegistered=0;
+    private int counterActive =0, counterClosed =0,counterLoggeds=0;    // счетчики для gui
+    private long counterRegistered=0;                                   // счетчики для gui
 
     private ServerListener serverListener;
-    private EventsHandler action;
+    private EventsHandler action;           // интерфейс эвентов данного класса
 
     public final int getCounterActive() {
         return counterActive;
@@ -56,7 +56,8 @@ public class ServerHandler extends Thread implements CommHandler {
     @Override
     public final void run(){
         try {
-            SqlServer.get().connectDB(this);
+            SqlServer.get().connectDB(this);    // передаем ссылку на самого себя. Поскольку SQLserver
+            // будет внутри себя вызывать только один метод, то не будем городить лишних интерфейсов для эвентов
             counterRegistered=SqlServer.get().countRegistered();
             serverListener.start();
             serverListener.join();
